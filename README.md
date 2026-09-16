@@ -1,83 +1,70 @@
-# Wireless Control of a Simulated Robotic System 🤖📡
+# Wireless control of a simulated robotic system 🤖📡
 
-This project is the result of my final thesis for the **Industrial Automation and Robotics** CFGS, completed at **IES Politécnico Hermenegildo Lanz (Granada, Spain)**.
+Final project of the **Higher Technician programme in Industrial Automation and Robotics** (CFGS), completed at **IES Politécnico Hermenegildo Lanz**, Granada, Spain.
 
-## 🧠 Overview
+## Why this exists
 
-The system allows full control of a simulated ABB robotic arm using a wireless physical interface based on a **Wii Nunchuk** controller. The communication and control chain combines **Arduino, ESP32, TIA Portal, WinCC**, and **ABB RobotStudio**, using both standard and custom protocols.
+The visible goal is to move a simulated ABB robotic arm with a **Wii Nunchuk**: joystick, two buttons, a gyroscope and an accelerometer driving each of the six axes, with an HMI showing the state of the simulation and of the communications.
 
----
+The real subject of the project is the problem underneath. There is a wide variety of devices from different manufacturers, each implementing its own strategies and resolving problems its own way, so integrating them into a single control chain is rarely straightforward. The approach taken here is to draw on what each device is able to contribute on its own and use it to make up for what the others lack, so that all of them take part in the final task.
 
-## 🔧 Technologies Used
+Hence six systems, **seven links, and a communication protocol written from scratch** to close the one gap the standard protocols did not cover.
 
-- **Hardware**
-  - ESP32 microcontrollers (2x)
-  - Arduino UNO
-  - Wii Nunchuk (joystick, accelerometer, buttons)
-  - LCD display 16x2 (I2C)
-  - ENC28J60 Ethernet module
-  - LiPo battery + voltage booster
-  - LEDs, resistors, protoboards
+## The chain
 
-- **Software**
-  - [RobotStudio (ABB)](https://new.abb.com/products/robotics/es/robotstudio)
-  - [TIA Portal V16 (Siemens)](https://new.siemens.com/global/en/products/automation/industry-software/automation-software/tia-portal.html)
-  - PLCSIM Advanced
-  - WinCC RT Advanced
-  - Arduino IDE + PlatformIO
-  - Custom OPC Server: **ABB IRC5 OPC**
+```
+Nunchuk ──I²C──▶ ESP32 #1 ──ESP-NOW──▶ ESP32 #2 ──J2WC──▶ Arduino Nano
+                                                              │
+                                                             SPI
+                                                              ▼
+                                                        ENC28J60
+                                                              │
+                                                        Modbus TCP
+                                                              ▼
+              RobotStudio ◀──OPC── WinCC RT Pro ◀──S7── PLC (TIA Portal)
+```
 
----
+The Arduino also drives a 16x2 LCD and several LEDs showing link status, latency and cycle time. In TIA Portal a single function block is instantiated six times, one per axis, and handles Modbus errors. RobotStudio's virtual controller returns the tool position and a heartbeat counter used to measure the latency of the whole chain.
 
-## 🔄 Communication Protocols
+**J2WC** (Juan 2 Wire Communication) is the custom protocol, written for this project to carry data reliably between two of the microcontrollers.
 
-- **I2C**: Sensor communication with Wii Nunchuk  
-- **ESP-NOW**: Wireless data transfer between ESP32 devices  
-- **J2WC**: Custom 2-wire communication protocol  
-- **Modbus TCP/IP**: Arduino to Siemens PLC (via ENC28J60)  
-- **OPC**: PLC <-> ABB RobotStudio data exchange  
-- **SCADA / HMI**: Built in WinCC
+## Technologies
 
----
+**Hardware** — 2x ESP32, Arduino UNO, Wii Nunchuk, 16x2 I²C LCD, ENC28J60 Ethernet module, LiPo battery + booster, LEDs and protoboards.
 
-## 🎯 Main Features
+**Software** — [RobotStudio (ABB)](https://new.abb.com/products/robotics/es/robotstudio), [TIA Portal V16 (Siemens)](https://new.siemens.com/global/en/products/automation/industry-software/automation-software/tia-portal.html), PLCSIM Advanced, WinCC RT Advanced, Arduino IDE + PlatformIO, ABB IRC5 OPC Server.
 
-- Real-time wireless control of a robotic arm simulation
-- Configurable HMI interface with status indicators
-- Latency and cycle time monitoring
-- Full code modularity and object-oriented logic blocks (TIA Portal)
-- Open-source, low-cost components
+**Protocols** — I²C, ESP-NOW, J2WC (custom), SPI, Modbus TCP/IP, S7, OPC.
 
----
+## Repository contents
 
-## 🎥 Demo
+```
+Arduino-ESP32.zip        firmware for both ESP32 boards and the Arduino
+TIA Portal.zip           PLC program and WinCC HMI project
+Robot Studio.zip         robot station and RAPID program
+Estevez_TFC_2022.pdf     full written report (Spanish)
+```
 
-👉 [Watch the demo video here](https://youtu.be/hsgEAXDb1Do)  
+Components were chosen to be within anyone's reach, both for their low cost and for how easily they can be implemented.
 
----
+## Demo
 
-## 📄 Full Report
+👉 [Watch the demo video](https://youtu.be/hsgEAXDb1Do)
 
-📥 [Download the final project report (PDF)](https://github.com/00Juan/robotstudio-wireless-control/blob/main/Estevez_TFC_2022.pdf)  
+## Full report
 
----
+📥 [Estevez_TFC_2022.pdf](https://github.com/00Juan/robotstudio-wireless-control/blob/main/Estevez_TFC_2022.pdf) — includes the J2WC frame structure, the wiring diagrams and the budget.
 
-## 👨‍🏫 Acknowledgements
+## Acknowledgements
 
-- **IES Politécnico Hermenegildo Lanz** (Granada, Spain)  
-- My tutors and professors from the Electricity Department  
----
+IES Politécnico Hermenegildo Lanz (Granada), and my tutors and professors from the Electricity Department.
 
-## 📃 License
+## License
 
-MIT License. Feel free to use, modify, and adapt this project for learning or development purposes. Credit appreciated!
+MIT. Use it, modify it and adapt it for learning or development. Credit appreciated.
 
----
+## Contact
 
-## 📫 Contact
-
-Juan Estévez Delgado  
-📧 juanesteveus@gmail.com 
-🌐 https://www.linkedin.com/in/juanestevezdelgado/
-
----
+Juan Estévez Delgado
+📧 juanestevezus@gmail.com
+🌐 [00juan.dev](https://00juan.dev) · [LinkedIn](https://www.linkedin.com/in/juanestevezdelgado/)
